@@ -4,14 +4,14 @@ import type { Database } from '@/shared/types/database'
 
 /**
  * Creates a Supabase client for use in Server Components and Server Actions
- * This client handles cookie management on the server side
+ * Handles cookie management on the server side (Next.js 15 compatible)
  *
  * IMPORTANT: Only use this in Server Components or Server Actions
  *
  * @returns Supabase server client instance
  */
-export function createClient() {
-  const cookieStore = cookies()
+export async function createClient() {
+  const cookieStore = await cookies() // 👈 Ahora usamos await
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,16 +25,14 @@ export function createClient() {
           try {
             cookieStore.set({ name, value, ...options })
           } catch (error) {
-            // The `set` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing user sessions.
+            console.warn('Cookie set called from Server Component (ignored)')
           }
         },
         remove(name: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value: '', ...options })
           } catch (error) {
-            // The `delete` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing user sessions.
+            console.warn('Cookie remove called from Server Component (ignored)')
           }
         },
       },
