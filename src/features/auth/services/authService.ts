@@ -58,7 +58,7 @@ export async function login(data: { email: string; password: string }): Promise<
 
   return {
     success: true,
-    redirectTo: '/',
+    redirectTo: '/dashboard',
   }
 }
 

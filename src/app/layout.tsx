@@ -1,10 +1,7 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
 import './globals.css'
 import { SupabaseProvider } from '@/shared/providers/SupabaseProvider'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'eBook Creator - Create Professional eBooks in Minutes',
@@ -20,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="font-sans antialiased">
         <SupabaseProvider>
           {children}
           <Toaster position="top-center" richColors />
