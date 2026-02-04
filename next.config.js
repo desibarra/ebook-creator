@@ -9,16 +9,20 @@ const nextConfig = {
         hostname: '**.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'oyvr1lrrpluixybinew.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
   },
 
   experimental: {
     serverActions: {
-      bodySizeLimit: '2mb',
+      bodySizeLimit: '4mb',
     },
   },
 
-  // 👇 Esta parte evita que el build falle por reglas de ESLint en Vercel
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -28,13 +32,6 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
-    if (isServer) {
-      // ⚠️ FIX CRÍTICO PARA VERCEL + SUPABASE FETCH ERROR
-      // Esto fuerza a Node.js a preferir IPv4 sobre IPv6
-      const dns = require('dns');
-      dns.setDefaultResultOrder('ipv4first');
-    }
-
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
