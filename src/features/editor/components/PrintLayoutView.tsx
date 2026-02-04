@@ -150,18 +150,15 @@ export function PrintLayoutView({ blocks }: PrintLayoutViewProps) {
                                         {/* Footer Profesional (Visible e Imprimible) */}
                                         <div className="absolute bottom-0 left-0 right-0 px-[75px] pb-8 pt-4 pointer-events-none">
                                             <div className="border-t border-gray-200 flex justify-between items-center pt-4 text-[10px] text-gray-400 font-medium">
-                                                {/* Capítulo (Izquierda) */}
-                                                <span className="uppercase tracking-widest truncate max-w-[250px]">
+                                                {/* Capítulo (Izquierda - Ahora con mucho más espacio) */}
+                                                <span className="uppercase tracking-widest truncate max-w-[500px] flex-1">
                                                     {pageChapter || ""}
                                                 </span>
 
-                                                {/* Número de página (Centro) */}
-                                                <span className="absolute left-1/2 transform -translate-x-1/2 bg-white px-2">
-                                                    {index + 1}
+                                                {/* Número de página (Derecha) */}
+                                                <span className="bg-white pl-4 font-bold text-gray-500">
+                                                    PÁGINA {index + 1}
                                                 </span>
-
-                                                {/* Decoración (Derecha) */}
-                                                <div className="h-1 w-12 bg-gray-100 rounded-full" />
                                             </div>
                                         </div>
                                     </div>
