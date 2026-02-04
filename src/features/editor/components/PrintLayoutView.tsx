@@ -148,8 +148,8 @@ export function PrintLayoutView({ blocks }: PrintLayoutViewProps) {
                                         <div className="absolute inset-[75px] border border-dashed border-blue-200/30 pointer-events-none z-0 print:hidden no-export" />
 
                                         {/* Footer Profesional (Visible e Imprimible) */}
-                                        <div className="absolute bottom-0 left-0 right-0 px-[75px] pb-8 pt-4 pointer-events-none">
-                                            <div className="border-t border-gray-200 flex justify-between items-center pt-4 text-[10px] text-gray-400 font-medium">
+                                        <div className="absolute bottom-2 left-0 right-0 px-[75px] pb-6 pt-4 pointer-events-none">
+                                            <div className="border-t border-gray-200 flex justify-between items-center pt-4 text-[10px] text-gray-400 font-medium leading-normal">
                                                 {/* Capítulo (Izquierda - Ahora con mucho más espacio) */}
                                                 <span className="uppercase tracking-widest truncate max-w-[500px] flex-1">
                                                     {pageChapter || ""}
