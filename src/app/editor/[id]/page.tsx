@@ -531,35 +531,39 @@ export default function EditorPage() {
                 orientation: 'portrait',
                 unit: 'mm',
                 format: 'a4',
-                compress: true
+                compress: false // Deshabilitamos compresión interna lenta, ya usamos JPEG
             });
 
             for (let i = 0; i < pagesGroups.length; i++) {
                 const pageElement = pagesGroups[i] as HTMLElement;
 
-                // Capturamos cada página individualmente
+                // Capturamos cada página individualmente con un escala un poco menor (1.3) para estabilidad
                 const canvas = await html2canvas(pageElement, {
-                    scale: 1.5, // 1.5 es un buen balance entre calidad y memoria por página
+                    scale: 1.3,
                     useCORS: true,
                     logging: false,
                     windowWidth: 794,
-                    windowHeight: 1123
+                    windowHeight: 1123,
+                    removeContainer: true // Ayuda a limpiar memoria
                 });
 
-                const imgData = canvas.toDataURL('image/jpeg', 0.8);
+                const imgData = canvas.toDataURL('image/jpeg', 0.75); // Un pelín más de compu para aligerar
 
                 if (i > 0) pdf.addPage();
 
-                // Pegamos cada imagen en una página nueva del PDF
-                pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+                // 'NONE' porque la imagen ya viene comprimida en JPEG desde toDataURL
+                pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'NONE');
 
                 // Actualizar toast con progreso
                 toast.loading(`Procesando página ${i + 1} de ${pagesGroups.length}...`, { id: loadingToast });
+
+                // Pequeña pausa para dejar que el navegador respire y actualice el UI
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
 
             pdf.save(`${project?.title || 'ebook'}.pdf`);
             toast.dismiss(loadingToast);
-            toast.success("✅ PDF exportado con éxito con todos los footers");
+            toast.success("✅ PDF exportado con éxito");
         } catch (error: unknown) {
             console.error('Export error:', error);
             const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
