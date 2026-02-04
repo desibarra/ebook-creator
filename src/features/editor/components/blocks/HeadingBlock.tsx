@@ -16,32 +16,50 @@ export function HeadingBlock({ block }: HeadingBlockProps) {
     const isPreview = mode === 'preview'
 
     const level = block.properties?.level || 1
+    const fontSizeMap = {
+        1: 36, // text-4xl
+        2: 30, // text-3xl
+        3: 24  // text-2xl
+    }
     const styles = {
-        1: "text-4xl font-extrabold tracking-tight pt-2 pb-1 leading-tight",
-        2: "text-3xl font-semibold tracking-tight pt-2 pb-1 leading-snug",
-        3: "text-2xl font-semibold tracking-tight pt-2 pb-1 leading-normal"
+        1: "text-4xl font-extrabold tracking-tight pt-4 pb-2 leading-tight text-slate-900 dark:text-white",
+        2: "text-3xl font-bold tracking-tight pt-3 pb-2 leading-snug text-slate-800 dark:text-slate-100",
+        3: "text-2xl font-bold tracking-tight pt-2 pb-1 leading-normal text-slate-800 dark:text-slate-200"
     }
 
     if (isPreview || (!isSelected && block.content)) {
-        // We use the level-specific heading logic from MarkdownBlock components if we wanted,
-        // but simple h tag with project styles is fine too, or just MarkdownBlock with forced level.
-        // If it's HTML, MarkdownBlock will handle it with rehype-raw.
-        // If it was raw text, we prepend #. 
-        // We'll check if it's HTML (starts with <)
-        const isHtml = block.content.trim().startsWith('<')
-        const content = isHtml ? block.content : '#'.repeat(level) + ' ' + block.content
-        return <MarkdownBlock content={content} />
+        // Modo lectura: Limpiamos HTML y forzamos Markdown Headline
+        const cleanContent = block.content.replace(/<\/?p>/g, '').trim()
+        const markdownContent = '#'.repeat(level) + ' ' + cleanContent
+
+        return (
+            <div className={cn(
+                "w-full mb-6",
+                (block.properties?.align === 'center' || !block.properties?.align) ? "text-center" :
+                    block.properties?.align === 'right' ? "text-right" : "text-left"
+            )}>
+                <MarkdownBlock content={markdownContent} />
+            </div>
+        )
     }
 
     return (
-        <div className={cn("w-full", styles[level as keyof typeof styles])}>
+        <div
+            className={cn(
+                "w-full transition-all duration-300 rounded-lg border border-transparent hover:border-slate-100 p-2",
+                styles[level as keyof typeof styles],
+                (block.properties?.align === 'center' || !block.properties?.align) ? "text-center" :
+                    block.properties?.align === 'right' ? "text-right" : "text-left"
+            )}
+        >
             <RichTextEditor
                 content={block.content}
                 onChange={(content) => updateBlock(block.id, { content })}
-                placeholder={`Heading ${level}`}
-                className="font-bold border-none p-0 focus:ring-0"
+                placeholder={`Título nivel ${level}...`}
+                fontSize={fontSizeMap[level as keyof typeof fontSizeMap]}
+                className="font-inherit border-none p-0 focus:ring-0 bg-transparent"
                 useHtml={true}
-                showToolbar={true} // Allow alignment and bold on titles
+                showToolbar={false}
             />
         </div>
     )

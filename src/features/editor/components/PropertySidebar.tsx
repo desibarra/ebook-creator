@@ -129,9 +129,9 @@ export function PropertySidebar() {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="1">H1 - Título de Capítulo</SelectItem>
-                                            <SelectItem value="2">H2 - Subtítulo Principal</SelectItem>
-                                            <SelectItem value="3">H3 - Sección Menor</SelectItem>
+                                            <SelectItem value="1">H1 - Título (36px)</SelectItem>
+                                            <SelectItem value="2">H2 - Subtítulo (30px)</SelectItem>
+                                            <SelectItem value="3">H3 - Sección (24px)</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>

@@ -37,13 +37,13 @@ export function MarkdownBlock({ content, fontSize }: MarkdownBlockProps) {
                         <li className="text-gray-700 dark:text-gray-300" {...props} />
                     ),
                     h1: ({ node: _node, ...props }) => (
-                        <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white mt-8 first:mt-0" {...props} />
+                        <h1 className="text-4xl font-black mb-6 text-gray-900 dark:text-white mt-10 first:mt-0 leading-tight" {...props} />
                     ),
                     h2: ({ node: _node, ...props }) => (
-                        <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white mt-6 first:mt-0" {...props} />
+                        <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white mt-8 first:mt-0 leading-snug" {...props} />
                     ),
                     h3: ({ node: _node, ...props }) => (
-                        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white mt-4 first:mt-0" {...props} />
+                        <h3 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white mt-6 first:mt-0 leading-normal" {...props} />
                     ),
                     table: ({ node: _node, ...props }) => (
                         <div className="overflow-x-auto mb-4 border rounded-lg">
