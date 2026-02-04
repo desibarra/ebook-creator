@@ -99,7 +99,7 @@ export function PrintLayoutView({ blocks }: PrintLayoutViewProps) {
                                         }}
                                     >
                                         {/* Page Info Header (Non-printable) */}
-                                        <div className="absolute -top-7 left-0 right-0 flex justify-between items-center px-1 print:hidden">
+                                        <div className="absolute -top-7 left-0 right-0 flex justify-between items-center px-1 print:hidden no-export">
                                             <div className="text-[10px] font-bold text-gray-500 flex items-center gap-1 bg-gray-100/80 px-2 py-0.5 rounded">
                                                 <Ruler className="h-3 w-3" />
                                                 <span>PAGINA {index + 1} DE {pages.length}</span>
@@ -130,7 +130,7 @@ export function PrintLayoutView({ blocks }: PrintLayoutViewProps) {
                                         </div>
 
                                         {/* Content Area */}
-                                        <div className="relative z-10 space-y-4 h-full overflow-hidden">
+                                        <div className="relative z-10 space-y-4 h-full overflow-hidden export-container">
                                             {pageBlocks.map((block) => (
                                                 <BlockRenderer key={block.id} block={block} />
                                             ))}
@@ -145,7 +145,7 @@ export function PrintLayoutView({ blocks }: PrintLayoutViewProps) {
                                         </div>
 
                                         {/* Visual Margins Guide (Non-printable) */}
-                                        <div className="absolute inset-[75px] border border-dashed border-blue-200/30 pointer-events-none z-0 print:hidden" />
+                                        <div className="absolute inset-[75px] border border-dashed border-blue-200/30 pointer-events-none z-0 print:hidden no-export" />
 
                                         {/* Footer Profesional (Visible e Imprimible) */}
                                         <div className="absolute bottom-0 left-0 right-0 px-[75px] pb-8 pt-4 pointer-events-none">

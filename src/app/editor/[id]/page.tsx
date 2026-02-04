@@ -537,17 +537,43 @@ export default function EditorPage() {
             for (let i = 0; i < pagesGroups.length; i++) {
                 const pageElement = pagesGroups[i] as HTMLElement;
 
-                // Capturamos cada página individualmente con un escala un poco menor (1.3) para estabilidad
+                // Capturamos cada página individualmente con limpieza de UI
                 const canvas = await html2canvas(pageElement, {
-                    scale: 1.3,
+                    scale: 1.5, // 1.5 para mejor calidad ahora que optimizamos el resto
                     useCORS: true,
                     logging: false,
                     windowWidth: 794,
                     windowHeight: 1123,
-                    removeContainer: true // Ayuda a limpiar memoria
+                    removeContainer: true,
+                    onclone: (documentClone) => {
+                        // 1. ELIMINAR ELEMENTOS DE UI (No queremos que salgan en el libro)
+                        const noExport = documentClone.querySelectorAll('.no-export, .page-break-indicator');
+                        noExport.forEach(el => (el as HTMLElement).style.display = 'none');
+
+                        // 2. APLICAR ESTILOS DE IMPRESIÓN PROFESIONAL AL CLON
+                        const container = documentClone.querySelector('.export-container');
+                        if (container) {
+                            const style = document.createElement('style');
+                            style.innerHTML = `
+                                .export-container { 
+                                    font-family: 'Georgia', serif !important; 
+                                    line-height: 1.6 !important;
+                                    color: #1a1a1a !important;
+                                }
+                                .export-container p { text-align: justify !important; margin-bottom: 1em !important; }
+                                .export-container h1, .export-container h2 { color: #000 !important; font-family: 'Helvetica', sans-serif !important; }
+                                
+                                /* Mejorar Tablas en el PDF */
+                                table { border-collapse: collapse !important; width: 100% !important; margin: 15px 0 !important; }
+                                th { background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important; padding: 8px !important; text-align: left !important; }
+                                td { border: 1px solid #e2e8f0 !important; padding: 8px !important; }
+                            `;
+                            container.appendChild(style);
+                        }
+                    }
                 });
 
-                const imgData = canvas.toDataURL('image/jpeg', 0.75); // Un pelín más de compu para aligerar
+                const imgData = canvas.toDataURL('image/jpeg', 0.85);
 
                 if (i > 0) pdf.addPage();
 
@@ -558,7 +584,7 @@ export default function EditorPage() {
                 toast.loading(`Procesando página ${i + 1} de ${pagesGroups.length}...`, { id: loadingToast });
 
                 // Pequeña pausa para dejar que el navegador respire y actualice el UI
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise(resolve => setTimeout(resolve, 50));
             }
 
             pdf.save(`${project?.title || 'ebook'}.pdf`);
