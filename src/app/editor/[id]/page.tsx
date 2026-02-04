@@ -10,6 +10,8 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 
 import { Canvas } from '@/features/editor/components/canvas/Canvas'
+import { BlockRenderer } from '@/features/editor/components/blocks/BlockRenderer'
+import { PropertySidebar } from '@/features/editor/components/PropertySidebar'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'
 import { projectService } from '@/features/projects/services/projectService'
 import { Button } from '@/shared/components/ui/button'
@@ -904,14 +906,7 @@ export default function EditorPage() {
                 </main>
 
                 {!isPreviewMode && (
-                    <aside className="w-72 border-l bg-background p-4 hidden lg:block">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                            Properties
-                        </p>
-                        <p className="text-sm text-muted-foreground italic">
-                            Select a block to edit properties
-                        </p>
-                    </aside>
+                    <PropertySidebar />
                 )}
             </div>
 
