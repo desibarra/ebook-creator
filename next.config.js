@@ -28,6 +28,13 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
+    if (isServer) {
+      // ⚠️ FIX CRÍTICO PARA VERCEL + SUPABASE FETCH ERROR
+      // Esto fuerza a Node.js a preferir IPv4 sobre IPv6
+      const dns = require('dns');
+      dns.setDefaultResultOrder('ipv4first');
+    }
+
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
