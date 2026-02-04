@@ -3,12 +3,12 @@
 
 import { useProjects } from '../hooks/useProjects'
 import { ProjectCard } from './ProjectCard'
-import { CreateProjectDialog } from './CreateProjectDialog'
 import { Loader2, Plus } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
+import Link from 'next/link'
 
 export function ProjectDashboard() {
-    const { projects, loading, error, createProject, deleteProject } = useProjects()
+    const { projects, loading, error, deleteProject } = useProjects()
 
     if (loading) {
         return (
@@ -39,7 +39,12 @@ export function ProjectDashboard() {
                         Manage your eBook projects or create a new one.
                     </p>
                 </div>
-                <CreateProjectDialog onCreate={createProject} />
+                <Link href="/projects/new">
+                    <Button size="lg" className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        New eBook
+                    </Button>
+                </Link>
             </div>
 
             {projects.length === 0 ? (
@@ -51,7 +56,12 @@ export function ProjectDashboard() {
                     <p className="text-muted-foreground mb-6 max-w-sm">
                         Get started by creating your first eBook project. It only takes a few seconds.
                     </p>
-                    <CreateProjectDialog onCreate={createProject} />
+                    <Link href="/projects/new">
+                        <Button size="lg" className="gap-2">
+                            <Plus className="h-4 w-4" />
+                            New eBook
+                        </Button>
+                    </Link>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

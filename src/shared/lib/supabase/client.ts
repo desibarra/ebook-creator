@@ -9,7 +9,6 @@ export function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
 
-  console.log('🔗 Usando Supabase URL:', supabaseUrl)
 
   return createBrowserClient<Database>(
     supabaseUrl!,

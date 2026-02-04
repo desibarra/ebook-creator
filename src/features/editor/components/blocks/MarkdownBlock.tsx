@@ -4,11 +4,15 @@ import rehypeRaw from 'rehype-raw';
 
 interface MarkdownBlockProps {
     content: string;
+    fontSize?: number;
 }
 
-export function MarkdownBlock({ content }: MarkdownBlockProps) {
+export function MarkdownBlock({ content, fontSize }: MarkdownBlockProps) {
     return (
-        <div className="markdown-content prose prose-slate dark:prose-invert max-w-none prose-p:mb-4 prose-li:mb-2 prose-headings:mb-4 text-gray-700 dark:text-gray-300">
+        <div
+            className="markdown-content prose prose-slate dark:prose-invert max-w-none prose-p:mb-4 prose-li:mb-2 prose-headings:mb-4 text-gray-700 dark:text-gray-300"
+            style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
+        >
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeRaw]}

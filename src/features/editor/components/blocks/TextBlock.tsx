@@ -15,7 +15,7 @@ export function TextBlock({ block }: TextBlockProps) {
     const isPreview = mode === 'preview'
 
     if (isPreview || (!isSelected && block.content)) {
-        return <MarkdownBlock content={block.content} />
+        return <MarkdownBlock content={block.content} fontSize={block.properties?.fontSize} />
     }
 
     return (

@@ -2,6 +2,8 @@
 import { createClient } from '@/shared/lib/supabase/client'
 import type { Project, CreateProjectDTO } from '../types'
 
+import { nanoid } from 'nanoid'
+
 export const projectService = {
     async getProjects() {
         const supabase = createClient()
@@ -21,12 +23,43 @@ export const projectService = {
 
         if (!user) throw new Error('User not authenticated')
 
+        const initialBlocks = [
+            {
+                id: nanoid(),
+                type: 'cover' as const,
+                content: project.title,
+                properties: {
+                    subtitle: '',
+                    author: user.user_metadata?.full_name || '',
+                    coverImage: null
+                }
+            },
+            {
+                id: nanoid(),
+                type: 'copyright' as const,
+                content: '',
+                properties: {
+                    year: new Date().getFullYear(),
+                    author: user.user_metadata?.full_name || '',
+                    isbn: ''
+                }
+            },
+            {
+                id: nanoid(),
+                type: 'table-of-contents' as const,
+                content: '<h2>CONTENIDO</h2>',
+                properties: {
+                    fontSize: 18
+                }
+            }
+        ]
+
         const newProject = {
             user_id: user.id,
             title: project.title,
             content: {
                 version: 1,
-                blocks: [],
+                blocks: initialBlocks,
                 settings: {
                     pageSize: 'a4',
                     orientation: 'portrait',

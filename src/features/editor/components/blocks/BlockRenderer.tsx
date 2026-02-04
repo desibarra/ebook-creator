@@ -11,6 +11,8 @@ import { PageBreakBlock } from './PageBreakBlock'
 import { TableOfContentsBlock } from './TableOfContentsBlock'
 import { CoverPageBlock } from './CoverPageBlock'
 
+import { CopyrightPageBlock } from './CopyrightPageBlock'
+
 interface BlockRendererProps {
     block: Block
 }
@@ -30,6 +32,8 @@ export const BlockRenderer = memo(({ block }: BlockRendererProps) => {
                 return <TableOfContentsBlock block={block} />
             case 'cover':
                 return <CoverPageBlock block={block} />
+            case 'copyright':
+                return <CopyrightPageBlock block={block} />
             case 'text':
             default:
                 return <TextBlock block={block} />

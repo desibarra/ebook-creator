@@ -33,7 +33,7 @@ export type ProjectSettings = {
   }
 }
 
-export type BlockType = 'text' | 'heading' | 'image' | 'divider' | 'spacer' | 'page-break' | 'table-of-contents' | 'cover'
+export type BlockType = 'text' | 'heading' | 'image' | 'divider' | 'spacer' | 'page-break' | 'table-of-contents' | 'cover' | 'copyright'
 
 export type Block = {
   id: string
