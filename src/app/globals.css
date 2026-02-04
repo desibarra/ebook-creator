@@ -53,7 +53,86 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Table of Contents - Espaciado mejorado */
+.table-of-contents-block {
+  line-height: 1.8;
+}
+
+.table-of-contents-view p,
+.table-of-contents-block p {
+  margin-bottom: 1.25rem !important;
+  /* Espacio generoso entre capítulos */
+}
+
+.table-of-contents-view ul,
+.table-of-contents-view ol,
+.table-of-contents-block ul,
+.table-of-contents-block ol {
+  margin-top: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.table-of-contents-view li,
+.table-of-contents-block li {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+/* Estilo para el título "CONTENIDO" si se escribe en negrita o H3 */
+.table-of-contents-block strong:first-child,
+.table-of-contents-block h1,
+.table-of-contents-block h2,
+.table-of-contents-block h3 {
+  display: block;
+  margin-bottom: 2rem !important;
+  color: #1a202c;
+  letter-spacing: 0.05em;
+}
+
+/* Ajustes para el editor interno de Tiptap en el TOC */
+.table-of-contents-block .ProseMirror p {
+  margin-bottom: 1.25rem !important;
+}
+
+/* Portada (Cover Page) - Estilos Avanzados */
+.cover-page-block {
+  transition: all 0.3s ease;
+}
+
+@media print {
+  .cover-page-block {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    z-index: 100;
+  }
+
+  /* Forzamos que la página de portada sea independiente */
+  .cover-page-block+* {
+    page-break-before: always;
   }
 }

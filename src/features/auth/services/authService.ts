@@ -1,11 +1,7 @@
 'use server'
 
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import { createClient } from '@/shared/lib/supabase/server'
+import { headers } from 'next/headers'
 
 interface AuthResult {
   success: boolean
@@ -18,6 +14,8 @@ interface AuthResult {
  */
 export async function signup(data: { email: string; password: string; fullName?: string }): Promise<AuthResult> {
   const { email, password, fullName } = data
+  const supabase = await createClient()
+  const origin = (await headers()).get('origin')
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -26,17 +24,21 @@ export async function signup(data: { email: string; password: string; fullName?:
       data: {
         full_name: fullName,
       },
+      emailRedirectTo: `${origin}/auth/callback`,
     },
   })
 
   if (error) {
-    console.error('Signup error:', error.message)
+    console.error('Signup error (Supabase):', error)
+    if (error instanceof Error) {
+      console.error('Full error details:', error.message, error.stack)
+    }
     return { success: false, error: error.message }
   }
 
   return {
     success: true,
-    redirectTo: '/login',
+    redirectTo: '/login?message=Check email to continue sign in process',
   }
 }
 
@@ -45,6 +47,7 @@ export async function signup(data: { email: string; password: string; fullName?:
  */
 export async function login(data: { email: string; password: string }): Promise<AuthResult> {
   const { email, password } = data
+  const supabase = await createClient()
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -52,13 +55,13 @@ export async function login(data: { email: string; password: string }): Promise<
   })
 
   if (error) {
-    console.error('Login error:', error.message)
+    console.error('Login error:', error)
     return { success: false, error: error.message }
   }
 
   return {
     success: true,
-    redirectTo: '/',
+    redirectTo: '/dashboard',
   }
 }
 
@@ -66,6 +69,7 @@ export async function login(data: { email: string; password: string }): Promise<
  * Log out current user
  */
 export async function logout(): Promise<AuthResult> {
+  const supabase = await createClient()
   const { error } = await supabase.auth.signOut()
 
   if (error) {

@@ -1,0 +1,84 @@
+.print-layout-bg {
+    background-color: #f3f4f6;
+    /* Gray-100 equivalent */
+    min-height: 100%;
+}
+
+.print-page {
+    background-color: white;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.print-page::after {
+    content: '';
+    position: absolute;
+    top: 75px;
+    /* Margin Top */
+    left: 75px;
+    /* Margin Left */
+    right: 75px;
+    /* Margin Right */
+    bottom: 75px;
+    /* Margin Bottom */
+    border: 1px dashed rgba(59, 130, 246, 0.2);
+    pointer-events: none;
+    z-index: 5;
+}
+
+.ruler-horizontal {
+    height: 24px;
+    background-image: linear-gradient(to right, #e5e7eb 1px, transparent 1px);
+    background-size: 37.8px 100%;
+    /* Approx 1cm at 96dpi */
+    border-bottom: 1px solid #d1d5db;
+}
+
+.ruler-vertical {
+    width: 24px;
+    background-image: linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
+    background-size: 100% 37.8px;
+    /* Approx 1cm at 96dpi */
+    border-right: 1px solid #d1d5db;
+}
+
+.page-break-indicator {
+    position: relative;
+    height: 2px;
+    background: repeating-linear-gradient(to right,
+            #3b82f6,
+            #3b82f6 10px,
+            transparent 10px,
+            transparent 20px);
+    margin: 2rem 0;
+    width: 100%;
+}
+
+.page-break-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 0 12px;
+    color: #3b82f6;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 9999px;
+    border: 1px solid #3b82f6;
+}
+
+.print-content-area {
+    padding: 75px;
+    min-height: 100%;
+    position: relative;
+    z-index: 10;
+}

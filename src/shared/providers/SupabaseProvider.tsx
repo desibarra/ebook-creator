@@ -1,18 +1,20 @@
 'use client'
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { SessionContextProvider } from '@supabase/auth-helpers-react'
-import type { ReactNode } from 'react'
+import { createClient } from '@/shared/lib/supabase/client'
+import { useState, type ReactNode } from 'react'
 
 interface Props {
   children: ReactNode
 }
 
 export function SupabaseProvider({ children }: Props) {
-  const supabase = createClientComponentClient()
+  // Initialize the client once and make it available if needed 
+  // (though createClient from libs is also valid)
+  const [supabase] = useState(() => createClient())
+
   return (
-    <SessionContextProvider supabaseClient={supabase}>
+    <>
       {children}
-    </SessionContextProvider>
+    </>
   )
 }

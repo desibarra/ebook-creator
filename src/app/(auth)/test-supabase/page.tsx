@@ -9,8 +9,14 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 // 👇 Crear cliente fuera del componente
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+interface Project {
+  id: string;
+  title: string;
+  status: string;
+}
+
 export default function TestSupabasePage() {
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,8 +26,9 @@ export default function TestSupabasePage() {
         const { data, error } = await supabase.from("projects").select("*");
         if (error) throw error;
         setProjects(data || []);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "mistery error";
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }

@@ -63,3 +63,8 @@ Thumbs.db
 # Supabase
 supabase/.branches
 supabase/.temp
+
+# Build and debug files
+*.tsbuildinfo
+test-connection.js
+test-db-connection.js
