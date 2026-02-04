@@ -137,6 +137,30 @@ export function PropertySidebar() {
                                 </div>
                             )}
 
+                            {/* Propiedades de Espaciador */}
+                            {selectedBlock.type === 'spacer' && (
+                                <div>
+                                    <label className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-1.5 block">Altura (Píxeles)</label>
+                                    <div className="flex gap-2">
+                                        <Select
+                                            value={String(selectedBlock.properties?.height || 40)}
+                                            onValueChange={(val) => updateBlock(selectedBlock.id, { properties: { ...selectedBlock.properties, height: parseInt(val) } })}
+                                        >
+                                            <SelectTrigger className="h-8 text-xs font-bold flex-1">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="20">20px (Pequeño)</SelectItem>
+                                                <SelectItem value="40">40px (Normal)</SelectItem>
+                                                <SelectItem value="80">80px (Grande)</SelectItem>
+                                                <SelectItem value="120">120px (Extra)</SelectItem>
+                                                <SelectItem value="200">200px (Máximo)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            )}
+
                             {(selectedBlock.type === 'heading' || selectedBlock.type === 'text') && (
                                 <div>
                                     <label className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-1.5 block">Alineación</label>
@@ -160,6 +184,31 @@ export function PropertySidebar() {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Convert Type Section */}
+                            <div className="pt-2 border-t border-slate-100">
+                                <label className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-1.5 block">
+                                    Convertir Tipo de Bloque
+                                </label>
+                                <Select
+                                    value={selectedBlock.type}
+                                    onValueChange={(val) => updateBlock(selectedBlock.id, { type: val as Block['type'] })}
+                                >
+                                    <SelectTrigger className="h-8 text-[11px] font-bold bg-slate-50 border-none shadow-none focus:ring-0">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="text">📄 Bloque de Texto</SelectItem>
+                                        <SelectItem value="heading">🏷️ Heading / Título</SelectItem>
+                                        <SelectItem value="spacer">↔️ Espaciador (Vacio)</SelectItem>
+                                        <SelectItem value="divider">➖ Divisor Lineal</SelectItem>
+                                        <SelectItem value="page-break">✂️ Salto de Página</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-[9px] text-slate-400 mt-2 italic leading-tight">
+                                    Cambia el tipo sin perder el contenido escrito.
+                                </p>
+                            </div>
 
                             <div className="flex gap-2">
                                 <Button
