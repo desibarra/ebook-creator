@@ -14,8 +14,8 @@ export default function NewEbookPage() {
 
     const handleTemplateComplete = async (
         prompt: string,
-        config: any,
-        templateData: any
+        _config: Record<string, unknown>,
+        templateData: Record<string, string>
     ) => {
         setIsCreating(true);
 
@@ -40,9 +40,10 @@ export default function NewEbookPage() {
                 // Redirect to the editor
                 router.push(`/editor/${project.id}`);
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error creating eBook:', error);
-            toast.error('Hubo un error al crear el proyecto: ' + error.message);
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            toast.error('Hubo un error al crear el proyecto: ' + errorMessage);
         } finally {
             setIsCreating(false);
         }
