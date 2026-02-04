@@ -1,29 +1,55 @@
-/**
- * LoginForm Component
- * Form for user login
- */
-
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { createClient } from '@/shared/lib/supabase/client'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { useAuth } from '../hooks/useAuth'
-import type { LoginFormData } from '../types/schemas'
+import { toast } from 'sonner'
 
 export function LoginForm() {
-  const { handleLogin, isPending, error } = useAuth()
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: '',
-  })
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await handleLogin(formData)
+    setError(null)
+    setIsLoading(true)
+
+    try {
+      console.log('🔧 Iniciando Login en el cliente...')
+      const supabase = createClient()
+
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (authError) {
+        console.error('❌ Error de Auth:', authError.message)
+        setError(authError.message)
+        toast.error(authError.message)
+        return
+      }
+
+      console.log('✅ Login exitoso en el navegador')
+      toast.success('¡Bienvenido de nuevo!')
+
+      // Forzar redirección al dashboard
+      router.push('/dashboard')
+      router.refresh()
+    } catch (err: any) {
+      console.error('❌ Error fatal en Login:', err)
+      setError('Error de conexión con el servicio de autenticación.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -45,11 +71,11 @@ export function LoginForm() {
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="crecesonline@gmail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              disabled={isPending}
+              disabled={isLoading}
             />
           </div>
 
@@ -59,17 +85,17 @@ export function LoginForm() {
               id="password"
               type="password"
               placeholder="Enter your password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
-              disabled={isPending}
+              disabled={isLoading}
             />
           </div>
         </CardContent>
 
         <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? 'Logging in...' : 'Log In'}
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? 'Logging in...' : 'Log In'}
           </Button>
 
           <p className="text-sm text-center text-muted-foreground">
