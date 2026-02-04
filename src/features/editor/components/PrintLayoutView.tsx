@@ -36,6 +36,29 @@ export function PrintLayoutView({ blocks }: PrintLayoutViewProps) {
         return result
     }, [blocks])
 
+    // Pre-calculate the current active chapter for each page to avoid O(N^2) complexity in render
+    const pageChapters = useMemo(() => {
+        const chapters: string[] = []
+        let currentChapter = ""
+
+        pages.forEach((pageBlocks: Block[]) => {
+            // Find the last H1 in this page to update the current chapter
+            // We're more flexible with the check: level 1 or no level (defaults to 1)
+            const h1InPage = [...pageBlocks].reverse().find(b =>
+                b.type === 'heading' &&
+                (Number(b.properties?.level || 1) === 1)
+            )
+
+            if (h1InPage) {
+                currentChapter = h1InPage.content.replace(/<[^>]*>?/gm, '').trim()
+            }
+
+            chapters.push(currentChapter)
+        })
+
+        return chapters
+    }, [pages])
+
     return (
         <div id="ebook-canvas" className="bg-gray-200/50 min-h-full p-8 pt-12">
             <div className="max-w-fit mx-auto relative">
@@ -61,24 +84,7 @@ export function PrintLayoutView({ blocks }: PrintLayoutViewProps) {
                     <div className="space-y-12">
                         <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
                             {pages.map((pageBlocks, index) => {
-                                // Encontrar el capítulo actual para esta página
-                                // Buscamos el último H1 que ocurrió antes o en esta página
-                                let pageChapter = ""
-                                // Primero buscamos en los bloques de esta página
-                                const h1InPage = [...pageBlocks].reverse().find(b => b.type === 'heading' && b.properties?.level === 1)
-                                if (h1InPage) {
-                                    pageChapter = h1InPage.content.replace(/<[^>]*>?/gm, '')
-                                } else {
-                                    // Si no hay H1 en esta página, buscamos en los bloques anteriores del documento
-                                    let lastH1Index = -1
-                                    blocks.forEach((b, i) => {
-                                        // Si el bloque actual está en una página anterior
-                                        const isEarlier = pages.slice(0, index).some(p => p.some(pb => pb.id === b.id))
-                                        if (isEarlier && b.type === 'heading' && b.properties?.level === 1) {
-                                            pageChapter = b.content.replace(/<[^>]*>?/gm, '')
-                                        }
-                                    })
-                                }
+                                const pageChapter = pageChapters[index]
 
                                 return (
                                     <div
