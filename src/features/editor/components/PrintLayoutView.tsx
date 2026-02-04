@@ -104,11 +104,29 @@ export function PrintLayoutView({ blocks }: PrintLayoutViewProps) {
                                                 <Ruler className="h-3 w-3" />
                                                 <span>PAGINA {index + 1} DE {pages.length}</span>
                                             </div>
-                                            {pageBlocks.length > 20 && (
-                                                <div className="text-[10px] font-bold text-amber-600 animate-pulse">
-                                                    ⚠️ POSIBLE DESBORDE
-                                                </div>
-                                            )}
+                                            {(() => {
+                                                // Heurística mejorada para detectar desborde real
+                                                const estHeight = pageBlocks.reduce((acc, b) => {
+                                                    if (b.type === 'heading') return acc + (b.properties?.level === 1 ? 80 : 50)
+                                                    if (b.type === 'image') return acc + 300
+                                                    if (b.type === 'spacer') return acc + (b.properties?.height || 40)
+                                                    if (b.type === 'divider') return acc + 20
+                                                    if (b.type === 'page-break') return acc + 0
+                                                    // Texto: ~25px base + estimación por caracteres (aprox 1.5px por char dividido por ancho de página)
+                                                    const charHeight = Math.ceil((b.content?.length || 0) / 100) * 22
+                                                    return acc + Math.max(30, charHeight)
+                                                }, 0)
+
+                                                if (estHeight > 900) {
+                                                    return (
+                                                        <div className="text-[10px] font-bold text-amber-600 animate-pulse flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                                                            <span>⚠️ POSIBLE DESBORDE</span>
+                                                            <span className="opacity-50 font-mono">({Math.round((estHeight / 948) * 100)}%)</span>
+                                                        </div>
+                                                    )
+                                                }
+                                                return null
+                                            })()}
                                         </div>
 
                                         {/* Content Area */}
