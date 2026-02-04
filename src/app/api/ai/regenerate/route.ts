@@ -4,7 +4,7 @@ import { SYSTEM_PROMPTS } from '@/lib/prompts/ebook-generator-prompts'
 import { createClient } from '@/shared/lib/supabase/server'
 
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+    apiKey: process.env.OPENAI_API_KEY || 'dummy-key',
 })
 
 export async function POST(request: NextRequest) {
