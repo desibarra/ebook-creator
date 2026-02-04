@@ -41,6 +41,14 @@ export async function createClient() {
       // Forzar fetch nativo ignorando ciertos comportamientos de next
       persistSession: true,
       autoRefreshToken: true,
+    },
+    global: {
+      fetch: (url: string | URL | Request, options: RequestInit = {}) => {
+        return fetch(url, {
+          ...options,
+          cache: 'no-store', // ⚠️ CRITICAL: Disable Next.js fetch caching for Auth
+        })
+      }
     }
   }
 
