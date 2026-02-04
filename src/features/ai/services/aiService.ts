@@ -44,6 +44,12 @@ Example Output Structure:
 ]
 `
 
+interface AIBlockResponse {
+    type: string
+    content: string
+    level?: number
+}
+
 export const aiService = {
     async generateEbookContent(params: GenerateEbookParams): Promise<Block[]> {
         // If no API key is set, return mock data to avoid crashing
@@ -78,16 +84,16 @@ export const aiService = {
             // Attempt to clean markdown code blocks if present
             const cleanContent = content.replace(/^```json\s*/, '').replace(/\s*```$/, '')
 
-            let parsedContent: any[] = []
+            let parsedContent: AIBlockResponse[] = []
             try {
                 parsedContent = JSON.parse(cleanContent)
-            } catch (e) {
+            } catch {
                 console.error('Failed to parse AI response:', content)
                 throw new Error('Invalid JSON response from AI')
             }
 
             // Map to our Block format
-            return parsedContent.map((item: any) => ({
+            return parsedContent.map((item: AIBlockResponse) => ({
                 id: nanoid(),
                 type: item.type as BlockType,
                 content: item.content,
@@ -147,9 +153,9 @@ export const aiService = {
 
             const content = completion.choices[0]?.message?.content || '[]'
             const cleanContent = content.replace(/^```json\s*/, '').replace(/\s*```$/, '')
-            const parsedContent = JSON.parse(cleanContent)
+            const parsedContent: AIBlockResponse[] = JSON.parse(cleanContent)
 
-            return parsedContent.map((item: any) => ({
+            return parsedContent.map((item: AIBlockResponse) => ({
                 id: nanoid(),
                 type: item.type as BlockType,
                 content: item.content,

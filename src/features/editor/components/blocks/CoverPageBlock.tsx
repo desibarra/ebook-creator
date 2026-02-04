@@ -30,7 +30,7 @@ export function CoverPageBlock({ block }: CoverPageBlockProps) {
     const subtitle = block.properties?.subtitle || '';
     const author = block.properties?.author || '';
 
-    const onUpdate = (data: any) => {
+    const onUpdate = (data: Record<string, unknown>) => {
         updateBlock(block.id, {
             properties: { ...block.properties, ...data }
         });
@@ -54,9 +54,10 @@ export function CoverPageBlock({ block }: CoverPageBlockProps) {
             const imageUrl = await uploadImage(file, 'user', projectId);
             onUpdate({ coverImage: imageUrl });
             toast.success('Portada subida correctamente');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error uploading cover:', error);
-            toast.error('Error al subir la imagen: ' + error.message);
+            const errorMessage = error instanceof Error ? error.message : 'Error al subir la imagen';
+            toast.error('Error al subir la imagen: ' + errorMessage);
         } finally {
             setIsUploading(false);
         }

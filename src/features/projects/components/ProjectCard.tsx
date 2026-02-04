@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import { MoreVertical, Pencil, Trash2, FileText } from 'lucide-react'
 import { Project } from '../types'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Card, CardFooter, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import {
     DropdownMenu,

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Trash2, Sparkles, Loader2 } from 'lucide-react'
+import { GripVertical, Trash2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/shared/lib/utils'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'

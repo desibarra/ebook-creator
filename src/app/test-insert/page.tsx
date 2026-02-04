@@ -25,9 +25,10 @@ export default function TestInsertPage() {
 
       if (error) throw error;
       setStatus("✅ Proyecto insertado correctamente");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setStatus("❌ " + err.message);
+      const msg = err instanceof Error ? err.message : "Error desconocido";
+      setStatus("❌ " + msg);
     }
   };
 

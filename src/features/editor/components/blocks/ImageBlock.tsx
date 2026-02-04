@@ -2,7 +2,7 @@
 import { useRef, useState } from 'react'
 import { Block } from '@/features/projects/types'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'
-import { Image as ImageIcon, Upload, Link, Loader2, X, Trash2 } from 'lucide-react'
+import { Image as ImageIcon, Upload, Link, Loader2, Trash2 } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { uploadImage, deleteImage } from '@/lib/supabase/imageUpload'
@@ -41,8 +41,9 @@ export function ImageBlock({ block }: ImageBlockProps) {
             updateBlock(block.id, { content: publicUrl, properties: { ...block.properties, storagePath: true } })
             toast.success('Imagen subida con éxito')
             setUploadMode(null)
-        } catch (error: any) {
-            toast.error(error.message || 'Error al subir la imagen')
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Error al subir la imagen';
+            toast.error(errorMessage)
         } finally {
             setIsUploading(false)
         }
