@@ -29,7 +29,8 @@ import NotebookLMPromptModal from '@/features/editor/components/modals/NotebookL
 import ChapterReviewPanel, { Chapter } from '@/features/editor/components/ChapterReviewPanel'
 import { markdownToBlocks } from '@/lib/utils/markdown-to-blocks'
 import { Block } from '@/features/projects/types'
-import { EBOOK_SECTION_TEMPLATES, EbookSectionType } from '@/lib/templates/ebook-section-templates'
+import { EbookSectionType, EBOOK_SECTION_TEMPLATES } from '@/lib/templates/ebook-section-templates'
+import { exportToWord } from '@/lib/export/exportToWord'
 
 export default function EditorPage() {
     const params = useParams()
@@ -600,8 +601,26 @@ export default function EditorPage() {
         }
     };
 
-    const exportToDOCX = () => {
-        toast.info("Exportación a DOCX en desarrollo. Por ahora usa PDF para Amazon KDP.");
+    const exportToDOCX = async () => {
+        const loadingToast = toast.loading("Generando documento Word... Esto puede tardar unos segundos.");
+        setIsExporting(true);
+
+        try {
+            await exportToWord(blocks, {
+                title: project?.title || 'Untitled eBook',
+                author: 'Autor',
+                subject: 'eBook'
+            });
+            toast.dismiss(loadingToast);
+            toast.success("✅ Documento Word (.docx) descargado con éxito");
+        } catch (error: unknown) {
+            console.error('Word export error:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            toast.dismiss(loadingToast);
+            toast.error("Error al exportar a Word: " + errorMessage);
+        } finally {
+            setIsExporting(false);
+        }
     };
 
     const exportToEPUB = () => {
@@ -718,13 +737,13 @@ export default function EditorPage() {
                                     <span className="text-[10px] text-muted-foreground">Próximamente</span>
                                 </div>
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={exportToDOCX} className="gap-3 py-2.5 cursor-pointer opacity-70">
+                            <DropdownMenuItem onClick={exportToDOCX} className="gap-3 py-2.5 cursor-pointer">
                                 <div className="p-1.5 bg-blue-100 text-blue-600 rounded-md">
                                     <FileText className="h-4 w-4" />
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-sm font-semibold">Word Document (.docx)</span>
-                                    <span className="text-[10px] text-muted-foreground">Próximamente</span>
+                                    <span className="text-[10px] text-muted-foreground">Editable y profesional</span>
                                 </div>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
