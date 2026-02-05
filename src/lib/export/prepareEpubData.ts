@@ -13,7 +13,9 @@ export function blocksToChapters(blocks: Block[]): Chapter[] {
         // Detectar inicio de capítulo (Heading H1 o que contenga la palabra Capítulo)
         const isChapterHeading =
             block.type === 'heading' &&
-            (block.properties?.level === 1 || block.content.toLowerCase().includes('capítulo'));
+            (block.properties?.level === 1 ||
+                block.content.toLowerCase().includes('capítulo') ||
+                block.content.toLowerCase().includes('chapter'));
 
         if (isChapterHeading) {
             // Guardar capítulo anterior si existe
