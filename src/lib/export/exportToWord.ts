@@ -16,51 +16,48 @@ export async function exportToWord(
 ) {
     const children: any[] = [];
 
-    // Procesar cada bloque con lógica de saltos de página y estructura editorial
+    // Procesar cada bloque con lógica estricta de maquetación editorial
     blocks.forEach((block, index) => {
-        // 1. Lógica de Saltos de Página (Instrucción 1)
-        // Forzamos salto antes de secciones clave si no es el primer bloque
-        const isChapter = block.type === 'heading' && block.content.toLowerCase().includes('capítulo');
-        const isEditorialSection = ['cover', 'copyright', 'table-of-contents'].includes(block.type as string) ||
-            (block.type === 'heading' && (block.content.toLowerCase().includes('prólogo') || block.content.toLowerCase().includes('dedicatoria')));
+        const contentUpper = block.content?.toUpperCase() || "";
+        const type = block.type as string;
 
-        if (index > 0 && (isChapter || isEditorialSection || block.type === 'page-break')) {
+        // 1. Saltos de Página Obligatorios (Instrucción 1 del usuario)
+        const isChapter = block.type === 'heading' && contentUpper.includes('CAPÍTULO');
+        const isTOC = type === 'table-of-contents' || contentUpper.includes('CONTENIDO');
+        const isDedication = contentUpper.includes('DEDICATORIA');
+        const isPrologue = contentUpper.includes('PRÓLOGO') || contentUpper.includes('INTRODUCCIÓN');
+        const isCopyright = type === 'copyright' || contentUpper.includes('COPYRIGHT');
+
+        // Insertar salto de página antes de estas secciones (excepto si es el primer bloque)
+        if (index > 0 && (isChapter || isTOC || isDedication || isPrologue || isCopyright || type === 'page-break')) {
             children.push(new Paragraph({ children: [new PageBreak()] }));
         }
 
-        // Si es un bloque de "Salto de Página" manual, no añadimos nada más
-        if (block.type === 'page-break') return;
+        if (type === 'page-break') return;
 
-        // 2. Procesar Bloque
+        // 2. Procesar el bloque (con detección de tablas mejorada)
         const blockElements = parseBlock(block);
         children.push(...blockElements);
-
-        // 3. Limpieza y Datos Finales (Instrucción 5)
-        // Si es el final de la Introducción o Prólogo, añadimos los datos de la autora
-        if (block.type === 'text' && (block.content.toLowerCase().includes('prólogo') || block.content.toLowerCase().includes('introducción')) && index < blocks.length - 1) {
-            // Nota: Esta lógica es heurística. En un entorno real, buscaríamos el último bloque de esa sección.
-        }
     });
 
-    // Añadir pie de firma al final si no existe
+    // 3. Firma final (Instrucción 5 del usuario)
     children.push(new Paragraph({
         alignment: AlignmentType.RIGHT,
-        spacing: { before: 400 },
+        spacing: { before: 800 },
         children: [
             new TextRun({
                 text: "León, Guanajuato, México - Febrero de 2026",
                 italics: true,
-                size: 18,
-                color: "666666"
+                size: 20,
+                color: "555555"
             })
         ]
     }));
 
-    // Crear documento con márgenes y estilos profesionales
+    // Crear documento final
     const doc = new Document({
         creator: metadata.author,
         title: metadata.title,
-        description: metadata.subject || metadata.title,
         styles: {
             default: {
                 document: {
@@ -68,6 +65,10 @@ export async function exportToWord(
                         font: "Georgia",
                         size: 24, // 12pt
                     },
+                    paragraph: {
+                        alignment: AlignmentType.JUSTIFIED, // Cuerpo Justificado por defecto (Alineación)
+                        spacing: { line: 360, after: 200 }, // Interlineado 1.5
+                    }
                 },
             },
         },
@@ -75,40 +76,17 @@ export async function exportToWord(
             {
                 properties: {
                     page: {
-                        margin: {
-                            top: 1440, // 1 inch
-                            right: 1440,
-                            bottom: 1440,
-                            left: 1440,
-                        },
+                        margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 },
                     },
-                },
-                headers: {
-                    default: new Header({
-                        children: [
-                            new Paragraph({
-                                children: [
-                                    new TextRun({
-                                        text: metadata.title.toUpperCase(),
-                                        size: 18,
-                                        color: "999999",
-                                        tracking: 1,
-                                    })
-                                ],
-                                alignment: AlignmentType.CENTER,
-                                spacing: { after: 200 },
-                            }),
-                        ],
-                    }),
                 },
                 footers: {
                     default: new Footer({
                         children: [
                             new Paragraph({
-                                alignment: AlignmentType.CENTER, // Instrucción 2: Numeración Centrada
+                                alignment: AlignmentType.CENTER, // Numeración Centrada (Instrucción 2)
                                 children: [
                                     new TextRun({
-                                        text: "PÁGINA ", // Instrucción 2: Formato 'PÁGINA X'
+                                        text: "PÁGINA ",
                                         size: 18,
                                         color: "666666",
                                     }),
@@ -128,164 +106,174 @@ export async function exportToWord(
         ],
     });
 
-    // Generar y descargar
     const blob = await Packer.toBlob(doc);
     const filename = `${metadata.title.replace(/[^a-z0-9]/gi, '_')}.docx`;
     saveAs(blob, filename);
 }
 
 function parseBlock(block: Block): any[] {
-    const content = block.content;
+    let content = block.content || "";
 
-    // Detectar tablas dentro del contenido (Instrucción 4)
-    if (content.includes('<table')) {
-        return [parseTable(content)];
+    // 4. Corrección de Espaciado: Evitar que palabras se peguen (Instrucción 4)
+    // Reemplazamos tags que suelen pegar palabras por el mismo tag con un espacio
+    content = content.replace(/<\/p><p>/g, '</p><p> </p><p>');
+    content = content.replace(/<\/span><span>/g, ' </span><span>');
+    content = content.replace(/<\/strong><span>/g, ' </strong><span>');
+    content = content.replace(/&nbsp;/g, ' ');
+
+    // 5. Reconstrucción de Tablas (Instrucción 3 y 4)
+    // Si el bloque parece una tabla o contiene la lista de síntomas que el usuario quiere convertir
+    if (content.includes('<table') || (content.toUpperCase().includes('SÍNTOMA') && content.toUpperCase().includes('HIPOTIROIDISMO'))) {
+        return [createProfessionalTable(content)];
     }
 
     switch (block.type) {
         case 'heading':
             const level = block.properties?.level || 1;
-            const isH1 = level === 1;
-            // Instrucción 3: Formato de Títulos destacado
             return [
                 new Paragraph({
-                    heading: isH1 ? HeadingLevel.HEADING_1 : level === 2 ? HeadingLevel.HEADING_2 : HeadingLevel.HEADING_3,
-                    alignment: isH1 ? AlignmentType.CENTER : AlignmentType.LEFT,
-                    spacing: { before: isH1 ? 1200 : 400, after: 400 },
+                    heading: level === 1 ? HeadingLevel.HEADING_1 : HeadingLevel.HEADING_2,
+                    alignment: AlignmentType.CENTER, // Títulos Centrados (Instrucción 5)
+                    spacing: { before: level === 1 ? 800 : 400, after: 400 },
                     children: [
                         new TextRun({
-                            text: cleanHTML(content).toUpperCase(),
-                            bold: true,
-                            size: isH1 ? 36 : 28,
-                            color: "1A365D", // Dark blue for professional look
+                            text: cleanTextOnly(content).toUpperCase(),
+                            bold: true, // En Negritas
+                            size: level === 1 ? 36 : 28,
+                            color: "000000",
                         })
                     ]
                 })
             ];
 
         case 'text':
+        case 'copyright':
+        case 'table-of-contents':
             return parseHTMLToParagraphs(content, block.properties?.align);
 
         case 'spacer':
-            const height = block.properties?.height || 20;
-            return [new Paragraph({ spacing: { before: height * 5 } })];
-
-        case 'divider':
-            return [
-                new Paragraph({
-                    border: {
-                        bottom: { color: "94A3B8", space: 1, style: "single" as any, size: 6 }
-                    },
-                    spacing: { before: 200, after: 200 }
-                })
-            ];
+            return [new Paragraph({ spacing: { before: (block.properties?.height || 20) * 5 } })];
 
         default:
             return parseHTMLToParagraphs(content);
     }
 }
 
-function parseTable(html: string): Table {
+function createProfessionalTable(html: string): Table {
     const rows: TableRow[] = [];
-    const trMatches = html.match(/<tr[^>]*>(.*?)<\/tr>/gs);
 
-    if (trMatches) {
-        trMatches.forEach(trHtml => {
-            const cells: TableCell[] = [];
-            // Buscamos th y td
-            const tdMatches = trHtml.match(/<(td|th)[^>]*>(.*?)<\/(td|th)>/gs);
-            if (tdMatches) {
-                tdMatches.forEach(tdHtml => {
-                    const isHeader = tdHtml.startsWith('<th');
-                    const inner = tdHtml.replace(/<(td|th)[^>]*>|<\/(td|th)>/g, '').trim();
-                    cells.push(new TableCell({
-                        children: [new Paragraph({
-                            children: parseRichText(inner),
-                            alignment: isHeader ? AlignmentType.CENTER : AlignmentType.LEFT,
-                            spacing: { before: 100, after: 100 },
-                        })],
-                        shading: isHeader ? { fill: "F8FAFC" } : undefined,
-                        verticalAlign: VerticalAlign.CENTER,
-                        borders: {
-                            top: { style: BorderStyle.SINGLE, size: 1, color: "CBD5E1" },
-                            bottom: { style: BorderStyle.SINGLE, size: 1, color: "CBD5E1" },
-                            left: { style: BorderStyle.SINGLE, size: 1, color: "CBD5E1" },
-                            right: { style: BorderStyle.SINGLE, size: 1, color: "CBD5E1" },
-                        }
-                    }));
-                });
-                rows.push(new TableRow({ children: cells }));
+    // Si el contenido NO es una tabla real pero tiene los datos de síntomas
+    if (!html.includes('<tr')) {
+        // Limpiamos y dividimos por líneas
+        const rawText = cleanTextOnly(html.replace(/<br\s*\/?>|<\/p>/gi, '\n'));
+        const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 5);
+
+        // Header obligatorio (Instrucción 3)
+        rows.push(new TableRow({
+            children: [
+                createCell("SÍNTOMA", true),
+                createCell("HIPOTIROIDISMO / MENOPAUSIA", true),
+                createCell("OBSERVACIONES", true),
+            ]
+        }));
+
+        // Intentar separar síntomas por ":" o "-"
+        lines.forEach(line => {
+            if (line.includes(':') || line.includes('-')) {
+                const separator = line.includes(':') ? ':' : '-';
+                const parts = line.split(separator);
+                const symp = parts[0].trim();
+                const obs = parts.slice(1).join(separator).trim();
+                rows.push(new TableRow({
+                    children: [createCell(symp), createCell(obs), createCell("-")]
+                }));
             }
+        });
+    } else {
+        // Parsear tabla HTML real (mejorado con multiline)
+        const trMatches = html.match(/<tr[^>]*>(.*?)<\/tr>/gsi);
+        trMatches?.forEach(trHtml => {
+            const cells: TableCell[] = [];
+            const tdMatches = trHtml.match(/<(td|th)[^>]*>(.*?)<\/(td|th)>/gsi);
+            tdMatches?.forEach(tdHtml => {
+                const isHeader = tdHtml.toLowerCase().includes('<th');
+                const text = cleanTextOnly(tdHtml);
+                cells.push(createCell(text, isHeader));
+            });
+            if (cells.length > 0) rows.push(new TableRow({ children: cells }));
         });
     }
 
     return new Table({
-        rows,
+        rows: rows.length > 0 ? rows : [new TableRow({ children: [createCell("Formato de tabla no detectado")] })],
         width: { size: 100, type: WidthType.PERCENTAGE },
     });
 }
 
-function parseHTMLToParagraphs(html: string, align?: string): Paragraph[] {
-    // Dividir por etiquetas de párrafo para mantener estructura
-    const pMatches = html.match(/<p>(.*?)<\/p>/gs);
-
-    if (pMatches) {
-        return pMatches.map(p => {
-            const inner = p.replace(/<\/?p>/g, '');
-            return createStandardParagraph(inner, align);
-        });
-    }
-
-    // Si no hay etiquetas p, dividimos por saltos de línea dobles
-    return html.split(/\n\s*\n/).filter(t => t.trim()).map(text => createStandardParagraph(text, align));
+function createCell(text: string, isHeader = false): TableCell {
+    return new TableCell({
+        children: [new Paragraph({
+            children: [new TextRun({ text, bold: isHeader, size: 22 })],
+            alignment: isHeader ? AlignmentType.CENTER : AlignmentType.LEFT,
+            spacing: { before: 120, after: 120 },
+        })],
+        shading: isHeader ? { fill: "F2F2F2" } : undefined,
+        borders: {
+            top: { style: BorderStyle.SINGLE, size: 1 },
+            bottom: { style: BorderStyle.SINGLE, size: 1 },
+            left: { style: BorderStyle.SINGLE, size: 1 },
+            right: { style: BorderStyle.SINGLE, size: 1 },
+        },
+        verticalAlign: VerticalAlign.CENTER,
+    });
 }
 
-function createStandardParagraph(content: string, align?: string) {
-    return new Paragraph({
-        children: parseRichText(content),
-        alignment: align === 'center' ? AlignmentType.CENTER :
-            align === 'right' ? AlignmentType.RIGHT : AlignmentType.JUSTIFIED,
-        spacing: { after: 200, line: 360 }, // 1.5 line spacing
+function parseHTMLToParagraphs(html: string, manualAlign?: string): Paragraph[] {
+    // Dividimos por bloques de párrafo y saltos br para evitar palabras pegadas
+    const blocks = html.split(/<\/p>|<br\s*\/?>/i).filter(b => b.trim().length > 0);
+
+    return blocks.map(block => {
+        return new Paragraph({
+            children: parseRichText(block),
+            alignment: manualAlign === 'center' ? AlignmentType.CENTER : AlignmentType.JUSTIFIED, // Justificado y Centrado
+        });
     });
 }
 
 function parseRichText(html: string): TextRun[] {
     const runs: TextRun[] = [];
+    // Un split que no borre los espacios entre etiquetas
     const parts = html.split(/(<[^>]+>)/g);
     let isBold = false;
     let isItalic = false;
 
     parts.forEach(part => {
-        if (part === '<strong>' || part === '<b>') isBold = true;
-        else if (part === '</strong>' || part === '</b>') isBold = false;
-        else if (part === '<em>' || part === '<i>') isItalic = true;
-        else if (part === '</em>' || part === '</i>') isItalic = false;
-        else if (part.startsWith('<')) { /* skip unknown tags */ }
+        const pLower = part.toLowerCase();
+        if (pLower.includes('strong') || pLower.includes('<b>')) isBold = !part.includes('/');
+        else if (pLower.includes('em') || pLower.includes('<i>')) isItalic = !part.includes('/');
+        else if (part.startsWith('<')) {
+            // Si es un tag y el siguiente parte es texto, añadimos un espacio si es un tag bloque
+            if (pLower.includes('span') || pLower.includes('div')) {
+                // No hacemos nada, solo evitamos pegar
+            }
+        }
         else {
-            const text = decodeHTMLEntities(part);
-            if (text) {
-                runs.push(new TextRun({
-                    text,
-                    bold: isBold,
-                    italics: isItalic,
-                }));
+            const clean = decodeHTMLEntities(part);
+            if (clean && clean !== ' ') {
+                runs.push(new TextRun({ text: clean, bold: isBold, italics: isItalic }));
+            } else if (clean === ' ') {
+                runs.push(new TextRun({ text: ' ' }));
             }
         }
     });
 
-    return runs.length > 0 ? runs : [new TextRun(cleanHTML(html))];
+    return runs.length > 0 ? runs : [new TextRun({ text: cleanTextOnly(html) })];
 }
 
-function cleanHTML(html: string): string {
-    return html.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+function cleanTextOnly(html: string): string {
+    return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 function decodeHTMLEntities(text: string): string {
-    return text
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/&apos;/g, "'");
+    return text.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'");
 }
