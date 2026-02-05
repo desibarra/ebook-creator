@@ -31,6 +31,8 @@ import { markdownToBlocks } from '@/lib/utils/markdown-to-blocks'
 import { Block } from '@/features/projects/types'
 import { EbookSectionType, EBOOK_SECTION_TEMPLATES } from '@/lib/templates/ebook-section-templates'
 import { exportToWord } from '@/lib/export/exportToWord'
+import { exportToEpub } from '@/lib/export/exportToEpub'
+import { blocksToChapters } from '@/lib/export/prepareEpubData'
 
 export default function EditorPage() {
     const params = useParams()
@@ -623,8 +625,37 @@ export default function EditorPage() {
         }
     };
 
-    const exportToEPUB = () => {
-        toast.info("Exportación a EPUB (Kindle) en desarrollo. Tip: Kindle acepta PDFs profesionales perfectamente.");
+    const exportToEPUB = async () => {
+        const loadingToast = toast.loading("Generando archivo ePub compatible con Kindle...");
+        setIsExporting(true);
+
+        try {
+            // 1. Preparar capítulos basados en la estructura del editor
+            const chapters = blocksToChapters(blocks);
+
+            if (chapters.length === 0) {
+                throw new Error("No se detectaron capítulos. Asegúrate de usar títulos (H1) para separar el contenido.");
+            }
+
+            // 2. Ejecutar exportación
+            await exportToEpub(chapters, {
+                title: project?.title || 'Untitled eBook',
+                author: 'Autor',
+                description: project?.content.generationParams?.topic || 'eBook generado con eBook Creator',
+                language: 'es',
+                published: new Date().toISOString()
+            });
+
+            toast.dismiss(loadingToast);
+            toast.success(`✅ ePub generado con ${chapters.length} capítulos`);
+        } catch (error: unknown) {
+            console.error('ePub export error:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            toast.dismiss(loadingToast);
+            toast.error("Error al exportar a ePub: " + errorMessage);
+        } finally {
+            setIsExporting(false);
+        }
     };
 
     const StructureButton = ({ icon, label, onClick, tooltip }: { icon: React.ReactNode, label: string, onClick: () => void, tooltip: string }) => (
@@ -728,13 +759,13 @@ export default function EditorPage() {
                                     <span className="text-[10px] text-muted-foreground">Ideal para Amazon KDP Print</span>
                                 </div>
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={exportToEPUB} className="gap-3 py-2.5 cursor-pointer opacity-70">
+                            <DropdownMenuItem onClick={exportToEPUB} className="gap-3 py-2.5 cursor-pointer">
                                 <div className="p-1.5 bg-yellow-100 text-yellow-600 rounded-md">
                                     <Book className="h-4 w-4" />
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-sm font-semibold">ePub (Kindle)</span>
-                                    <span className="text-[10px] text-muted-foreground">Próximamente</span>
+                                    <span className="text-[10px] text-muted-foreground">Ideal para Amazon Store</span>
                                 </div>
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={exportToDOCX} className="gap-3 py-2.5 cursor-pointer">
